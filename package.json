@@ -1,0 +1,16 @@
+{
+  "name": "cbpp_geojson_from_url",
+  "version": "1.0.0",
+  "description": "Downloads zip files from URLs (typically Census) and converts to GeoJSON",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nick Kasprak",
+  "license": "ISC",
+  "dependencies": {
+    "ogr2ogr": "^3.1.0",
+    "request": "^2.88.2",
+    "unzipper": "^0.10.11"
+  }
+}
