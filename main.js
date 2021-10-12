@@ -2,7 +2,7 @@
 var request = require("request");
 var fs = require("fs");
 var unzipper = require("unzipper");
-var ogr2ogr = require("ogr2ogr");
+var ogr2ogr = require("ogr2ogr").default;
 
 module.exports = geojson_from_url;
 
@@ -61,18 +61,15 @@ var Shp2GeoJSONConvertor = function(f, cb) {
       if (fs.existsSync("./geojson/" + f + ".json")) {
         resolve();
       } else {
-        var ws = fs.createWriteStream("./geojson/" + f + ".json");
-        ogr2ogr('./shp/' + f + "/" + f + ".shp")
-          .format('GeoJSON')
-          .timeout(600000)
-          .stream()
-          .pipe(ws);
-        ws.on("finish", function() {
-          console.log("finish for " + f);
-          setTimeout(function() {
-            resolve();
-          }, 10);
-        });
+        ogr2ogr('./shp/' + f + "/" + f + ".shp", {
+          format:"GeoJSON",
+          timeout: 600000
+        }).exec((err, data)=> {
+          if (data) {
+            fs.writeFileSync("./geojson/" + f + ".json", JSON.stringify(data.data), "utf-8");
+          }
+          resolve();
+        })
       }
     } catch (ex) {
       console.log(ex);
