@@ -14,25 +14,27 @@ function make_directory(path) {
   };
 }
 
-function geojson_from_url(url, cb) {
-  make_directory("./zip");
-  var file = url.split("/");
-  file = file[file.length - 1];
-  var name = file.split(".");
-  name.pop();
-  name = name.join(".");
-  RequestMaker(url,"./zip").then(function() {
-    unzip_file(name)
-  }).then(function() {
-    Shp2GeoJSONConvertor(name)
-  }).then(function() {
-    if (typeof(cb)==="function") {cb();}
+function geojson_from_url(url) {
+  return new Promise(function(resolve, reject) {
+    make_directory("./zip");
+    var file = url.split("/");
+    file = file[file.length - 1];
+    var name = file.split(".");
+    name.pop();
+    name = name.join(".");
+    RequestMaker(url,"./zip").then(function() {
+      return unzip_file(name)
+    }).then(function() {
+      return Shp2GeoJSONConvertor(name)
+    }).then(function() {
+      resolve();
+    });
   });
 }
 
 var RequestMaker = function(f, dest, j) {
-  make_directory("./zip");
   return new Promise(function(resolve, reject) {
+    make_directory("./zip");
     try {
       var filename = f.split("/")[f.split("/").length - 1];
       if (fs.existsSync(dest + "/" + filename)) {
@@ -55,8 +57,8 @@ var RequestMaker = function(f, dest, j) {
 };
 
 var Shp2GeoJSONConvertor = function(f, cb) {
-  make_directory("./geojson");
   return new Promise(function(resolve, reject) {
+    make_directory("./geojson");
     try {
       if (fs.existsSync("./geojson/" + f + ".json")) {
         resolve();
@@ -67,6 +69,7 @@ var Shp2GeoJSONConvertor = function(f, cb) {
         }).exec((err, data)=> {
           if (data) {
             fs.writeFileSync("./geojson/" + f + ".json", JSON.stringify(data.data), "utf-8");
+            console.log("finished converting " + f);
           }
           resolve();
         })
@@ -86,7 +89,12 @@ var unzip_file = function(file) {
       fs.createReadStream("./zip/" + file + ".zip")
         .pipe(unzipper.Extract({
           path: './shp/' + file
-        }).on("close", resolve));
+        }).on("close", function() {
+          setTimeout(function() {
+            console.log("finished unzipping " + file);
+            resolve();
+          }, 100); 
+        }));
     }
   });
 };
