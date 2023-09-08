@@ -70,8 +70,12 @@ var Shp2GeoJSONConvertor = function(f, cb) {
           if (data) {
             fs.writeFileSync("./geojson/" + f + ".json", JSON.stringify(data.data), "utf-8");
             console.log("finished converting " + f);
+            resolve();
           }
-          resolve();
+          if (err) {
+            console.log(err);
+            reject();
+          }
         })
       }
     } catch (ex) {
